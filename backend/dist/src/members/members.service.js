@@ -89,6 +89,12 @@ let MembersService = class MembersService {
             netBalance: totalDeposits - totalWithdrawals,
         };
     }
+    async findByUserId(userId) {
+        return this.prisma.member.findFirst({
+            where: { userId },
+            include: { user: true },
+        });
+    }
 };
 exports.MembersService = MembersService;
 exports.MembersService = MembersService = __decorate([

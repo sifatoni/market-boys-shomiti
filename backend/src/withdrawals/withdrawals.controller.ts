@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, Delete, Patch, UseGuards, Query, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { WithdrawalsService } from './withdrawals.service';
@@ -10,7 +11,6 @@ import { MembersService } from '../members/members.service';
 @ApiTags('Withdrawals')
 @ApiBearerAuth()
 @Controller('withdrawals')
-@UseGuards(RolesGuard)
 export class WithdrawalsController {
     constructor(
         private readonly withdrawalsService: WithdrawalsService,
@@ -18,6 +18,7 @@ export class WithdrawalsController {
     ) { }
 
     @Post()
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
     @ApiOperation({ summary: 'Record a new withdrawal' })
     async create(@Body() dto: CreateWithdrawalDto) {
@@ -25,7 +26,7 @@ export class WithdrawalsController {
     }
 
     @Get()
-    @Roles('ADMIN', 'USER')
+    @UseGuards(JwtAuthGuard)
     @ApiQuery({ name: 'memberId', required: false })
     @ApiOperation({ summary: 'Get all withdrawals' })
     async findAll(@Query('memberId') memberId: string, @Request() req) {
@@ -37,6 +38,7 @@ export class WithdrawalsController {
     }
 
     @Get('summary')
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
     @ApiOperation({ summary: 'Get total withdrawals summary' })
     async getSummary() {
@@ -44,12 +46,14 @@ export class WithdrawalsController {
     }
 
     @Get(':id')
-    @Roles('ADMIN', 'USER')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Get a single withdrawal' })
     async findOne(@Param('id') id: string) {
         return this.withdrawalsService.findOne(id);
     }
 
     @Patch(':id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
     @ApiOperation({ summary: 'Update a withdrawal record' })
     async update(@Param('id') id: string, @Body() dto: UpdateWithdrawalDto) {
@@ -57,7 +61,9 @@ export class WithdrawalsController {
     }
 
     @Delete(':id')
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
+    @ApiOperation({ summary: 'Delete a withdrawal record' })
     async remove(@Param('id') id: string) {
         return this.withdrawalsService.remove(id);
     }

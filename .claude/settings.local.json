@@ -14,7 +14,12 @@
       "Bash(npx @nestjs/cli generate service users)",
       "Bash(npx @nestjs/cli generate controller users)",
       "Bash(Get-ChildItem *)",
-      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"continue\" npx prisma migrate reset --force)"
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"continue\" npx prisma migrate reset --force)",
+      "Bash(ls src/app/)",
+      "Bash(ls src/)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\(JSON.stringify\\({...p.dependencies,...p.devDependencies}, null, 2\\)\\)\")",
+      "Bash(mkdir -p \"i:/AI Projects/market-boys-shomiti/frontend/src/app/admin/members/[id]/edit\")",
+      "Bash(mkdir -p \"i:/AI Projects/market-boys-shomiti/frontend/src/app/admin/deposits/[id]\")"
     ]
   }
 }

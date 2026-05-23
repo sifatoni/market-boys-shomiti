@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MembersController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 const roles_guard_1 = require("../auth/roles.guard");
 const roles_decorator_1 = require("../auth/roles.decorator");
 const members_service_1 = require("./members.service");
@@ -32,13 +33,15 @@ let MembersController = class MembersController {
         if (req.user.role === 'ADMIN') {
             return this.membersService.findAll();
         }
-        const member = await this.membersService.findOne(req.user.id);
-        return [member];
+        const member = await this.membersService.findByUserId(req.user.id);
+        return member ? [member] : [];
     }
     async findOne(id, req) {
-        if (req.user.role !== 'ADMIN' && req.user.id !== (await this.membersService.findOne(id)).userId) {
+        const member = await this.membersService.findOne(id);
+        if (req.user.role !== 'ADMIN' && member.userId !== req.user.id) {
+            throw new common_1.ForbiddenException('You can only view your own profile');
         }
-        return this.membersService.findOne(id);
+        return member;
     }
     async update(id, updateMemberDto) {
         return this.membersService.update(id, updateMemberDto);
@@ -57,6 +60,7 @@ let MembersController = class MembersController {
 exports.MembersController = MembersController;
 __decorate([
     (0, common_1.Post)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('ADMIN'),
     (0, swagger_1.ApiOperation)({ summary: 'Create a new member' }),
     __param(0, (0, common_1.Body)()),
@@ -66,7 +70,7 @@ __decorate([
 ], MembersController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('ADMIN', 'USER'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: 'Get all members' }),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
@@ -75,7 +79,7 @@ __decorate([
 ], MembersController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)('ADMIN', 'USER'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: 'Get member details' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Request)()),
@@ -85,6 +89,7 @@ __decorate([
 ], MembersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('ADMIN'),
     (0, swagger_1.ApiOperation)({ summary: 'Update member profile' }),
     __param(0, (0, common_1.Param)('id')),
@@ -95,6 +100,7 @@ __decorate([
 ], MembersController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('ADMIN'),
     (0, swagger_1.ApiOperation)({ summary: 'Remove a member' }),
     __param(0, (0, common_1.Param)('id')),
@@ -104,7 +110,7 @@ __decorate([
 ], MembersController.prototype, "remove", null);
 __decorate([
     (0, common_1.Get)(':id/balance'),
-    (0, roles_decorator_1.Roles)('ADMIN', 'USER'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiOperation)({ summary: 'Calculate current member balance' }),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Request)()),
@@ -116,7 +122,6 @@ exports.MembersController = MembersController = __decorate([
     (0, swagger_1.ApiTags)('Members'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)('members'),
-    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
     __metadata("design:paramtypes", [members_service_1.MembersService])
 ], MembersController);
 //# sourceMappingURL=members.controller.js.map

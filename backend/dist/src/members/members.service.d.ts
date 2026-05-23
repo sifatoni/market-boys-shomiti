@@ -15,4 +15,5 @@ export declare class MembersService {
         totalWithdrawals: number;
         netBalance: number;
     }>;
+    findByUserId(userId: string): Promise<Member | null>;
 }

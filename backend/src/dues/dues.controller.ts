@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, Patch, UseGuards, Query, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { DuesService } from './dues.service';
@@ -9,7 +10,6 @@ import { MembersService } from '../members/members.service';
 @ApiTags('Dues')
 @ApiBearerAuth()
 @Controller('dues')
-@UseGuards(RolesGuard)
 export class DuesController {
     constructor(
         private readonly duesService: DuesService,
@@ -17,6 +17,7 @@ export class DuesController {
     ) { }
 
     @Post()
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
     @ApiOperation({ summary: 'Create a due record manually' })
     async create(@Body() dto: CreateDueDto) {
@@ -24,6 +25,7 @@ export class DuesController {
     }
 
     @Post('generate-monthly')
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
     @ApiOperation({ summary: 'Generate monthly dues for all active members' })
     async generateMonthly(@Body() body: { amount: string; month: number; year: number }) {
@@ -31,7 +33,7 @@ export class DuesController {
     }
 
     @Get()
-    @Roles('ADMIN', 'USER')
+    @UseGuards(JwtAuthGuard)
     @ApiQuery({ name: 'memberId', required: false })
     @ApiOperation({ summary: 'Get all due records' })
     async findAll(@Query('memberId') memberId: string, @Request() req) {
@@ -43,6 +45,7 @@ export class DuesController {
     }
 
     @Get('overdue')
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
     @ApiOperation({ summary: 'Get all overdue records' })
     async findOverdue() {
@@ -50,6 +53,7 @@ export class DuesController {
     }
 
     @Get('summary')
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
     @ApiOperation({ summary: 'Get dues summary statistics' })
     async getSummary() {
@@ -57,6 +61,7 @@ export class DuesController {
     }
 
     @Patch(':id/status')
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles('ADMIN')
     @ApiOperation({ summary: 'Update due record status (PAID/PARTIAL/UNPAID)' })
     async updateStatus(@Param('id') id: string, @Body() dto: UpdateDueStatusDto) {
