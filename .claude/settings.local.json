@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest *)",
+      "Bash(npx @nestjs/cli new . --package-manager npm --skip-git)",
+      "Bash(npm install *)",
+      "Bash(npx prisma *)",
+      "Bash(docker-compose up *)",
+      "Bash(docker-compose exec *)",
+      "Bash(npx nest *)",
+      "Bash(npm run *)",
+      "Bash(export DATABASE_URL=\"postgresql://user:password@localhost:5433/samity_db?schema=public\")",
+      "Bash(npx @nestjs/cli generate module users)",
+      "Bash(npx @nestjs/cli generate service users)",
+      "Bash(npx @nestjs/cli generate controller users)",
+      "Bash(Get-ChildItem *)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"continue\" npx prisma migrate reset --force)"
+    ]
+  }
+}

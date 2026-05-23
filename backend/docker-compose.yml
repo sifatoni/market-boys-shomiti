@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: samity-db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: samity_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: samity-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://user:password@db:5432/samity_db?schema=public"
+      JWT_SECRET: "super-secret-key-change-this-in-prod"
+      JWT_REFRESH_SECRET: "super-secret-refresh-key-change-this-in-prod"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

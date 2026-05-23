@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  member    Member?
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model Member {
+  id            String       @id @default(uuid())
+  memberNumber  String       @unique
+  fullName      String
+  phone         String?
+  address       String?
+  joinedDate    DateTime     @default(now())
+  status        MemberStatus @default(ACTIVE)
+
+  userId        String       @unique
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  deposits      Deposit[]
+  withdrawals   Withdrawal[]
+  dueRecords    DueRecord[]
+
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Deposit {
+  id            String   @id @default(uuid())
+  amount        Decimal
+  date          DateTime @default(now())
+  description   String?
+
+  memberId      String
+  member        Member   @relation(fields: [memberId], references: [id])
+
+  createdAt     DateTime @default(now())
+}
+
+model Withdrawal {
+  id            String   @id @default(uuid())
+  amount        Decimal
+  date          DateTime @default(now())
+  description   String?
+
+  memberId      String
+  member        Member   @relation(fields: [memberId], references: [id])
+
+  createdAt     DateTime @default(now())
+}
+
+enum DueStatus {
+  PAID
+  UNPAID
+  PARTIAL
+}
+
+model DueRecord {
+  id            String    @id @default(uuid())
+  amount        Decimal
+  dueDate       DateTime
+  paidDate      DateTime?
+  status        DueStatus @default(UNPAID)
+
+  memberId      String
+  member        Member    @relation(fields: [memberId], references: [id])
+
+  createdAt     DateTime   @default(now())
+}
