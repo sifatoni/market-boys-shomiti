@@ -28,23 +28,19 @@ export class MembersController {
     if (req.user.role === 'ADMIN') {
       return this.membersService.findAll();
     }
-    // Regular users should only see their own member profile if it exists
-    const member = await this.membersService.findOne(req.user.id);
-    // Note: This assumes req.user.id is the userId. In actual implementation,
-    // findOne should probably be updated to support findByUserId if we want to call it here,
-    // or we just return the specific member linked to this user.
-    return [member];
+    const member = await this.membersService.findByUserId(req.user.id);
+    return member ? [member] : [];
   }
 
   @Get(':id')
   @Roles('ADMIN', 'USER')
   @ApiOperation({ summary: 'Get member details' })
   async findOne(@Param('id') id: string, @Request() req) {
-    if (req.user.role !== 'ADMIN' && req.user.id !== (await this.membersService.findOne(id)).userId) {
-       // This logic is slightly circular but ensures a USER can only access their own profile.
-       // Better: check if member.userId === req.user.id
+    const member = await this.membersService.findOne(id);
+    if (req.user.role !== 'ADMIN' && member.userId !== req.user.id) {
+      throw new ForbiddenException('You can only view your own profile');
     }
-    return this.membersService.findOne(id);
+    return member;
   }
 
   @Patch(':id')

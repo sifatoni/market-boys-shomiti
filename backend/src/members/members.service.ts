@@ -6,12 +6,11 @@ import { UpdateMemberDto } from './dto/update-member.dto';
 
 @Injectable()
 export class MembersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(dto: CreateMemberDto): Promise<Member> {
     const { userId, ...memberData } = dto;
 
-    // 1. Verify User exists and check if they already have a member profile
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { member: true }
@@ -21,12 +20,10 @@ export class MembersService {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
 
-    // 2. Verify User doesn't already have a member profile
     if (user.member) {
       throw new ConflictException('This user already has a member profile');
     }
 
-    // 3. Create Member
     return this.prisma.member.create({
       data: {
         ...memberData,
@@ -96,5 +93,12 @@ export class MembersService {
       totalWithdrawals,
       netBalance: totalDeposits - totalWithdrawals,
     };
+  }
+
+  async findByUserId(userId: string): Promise<Member | null> {
+    return this.prisma.member.findFirst({
+      where: { userId },
+      include: { user: true },
+    });
   }
 }
