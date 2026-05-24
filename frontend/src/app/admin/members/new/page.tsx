@@ -66,6 +66,7 @@ export default function NewMemberPage() {
       if (formData.phone.trim()) memberPayload.phone = formData.phone.trim();
       if (formData.address.trim()) memberPayload.address = formData.address.trim();
       memberPayload.monthlyAmount = formData.monthlyAmount.trim() || '0';
+      memberPayload.plainPassword = formData.password; // for welcome email only
 
       await api.post('/members', memberPayload);
 

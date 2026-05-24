@@ -58,7 +58,7 @@ model Deposit {
   description   String?
 
   memberId      String
-  member        Member   @relation(fields: [memberId], references: [id])
+  member        Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   createdAt     DateTime @default(now())
 }
@@ -70,7 +70,7 @@ model Withdrawal {
   description   String?
 
   memberId      String
-  member        Member   @relation(fields: [memberId], references: [id])
+  member        Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   createdAt     DateTime @default(now())
 }
@@ -89,7 +89,7 @@ model DueRecord {
   status        DueStatus @default(UNPAID)
 
   memberId      String
-  member        Member    @relation(fields: [memberId], references: [id])
+  member        Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   createdAt     DateTime   @default(now())
 }

@@ -20,9 +20,12 @@ export default function BalanceDisplay({ memberId }: Props) {
     api.get(`/members/${memberId}/balance`)
       .then((res) => {
         if (cancelled) return;
-        const data = res.data?.data ?? res.data;
-        const val = data?.balance ?? data?.netBalance ?? Number(data);
-        setBalance(isNaN(Number(val)) ? null : Number(val));
+        const raw = res.data;
+        const value = typeof raw === 'number' ? raw : 
+                      typeof raw === 'object' && raw.balance !== undefined ? Number(raw.balance) :
+                      typeof raw === 'object' && raw.totalDeposits !== undefined ? 
+                      Number(raw.totalDeposits) - Number(raw.totalWithdrawals) : 0;
+        setBalance(value);
       })
       .catch(() => {
         if (!cancelled) setError(true);

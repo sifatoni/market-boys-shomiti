@@ -1,15 +1,21 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Member, Prisma, UserRole } from '@prisma/client';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class MembersService {
-  constructor(private prisma: PrismaService) { }
+  private readonly logger = new Logger(MembersService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) { }
 
   async create(dto: CreateMemberDto): Promise<Member> {
-    const { userId, monthlyAmount, ...memberData } = dto;
+    const { userId, monthlyAmount, plainPassword, ...memberData } = dto;
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -24,13 +30,26 @@ export class MembersService {
       throw new ConflictException('This user already has a member profile');
     }
 
-    return this.prisma.member.create({
+    const createdMember = await this.prisma.member.create({
       data: {
         ...memberData,
         monthlyAmount: new Prisma.Decimal(monthlyAmount || '0'),
         user: { connect: { id: userId } },
       },
     });
+
+    // Fire-and-forget welcome email
+    this.logger.log(`Attempting welcome email to: ${user.email}`);
+    this.emailService.sendWelcomeEmail({
+      to: user.email,
+      memberName: dto.fullName,
+      memberNumber: createdMember.memberNumber,
+      email: user.email,
+      password: plainPassword || 'আপনার নির্ধারিত পাসওয়ার্ড',
+      loginUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+    }).catch(() => {}); // non-blocking
+
+    return createdMember;
   }
 
   async findAll(): Promise<Member[]> {

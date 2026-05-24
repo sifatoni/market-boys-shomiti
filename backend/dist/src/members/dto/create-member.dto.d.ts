@@ -5,4 +5,5 @@ export declare class CreateMemberDto {
     address?: string;
     userId: string;
     monthlyAmount?: string;
+    plainPassword?: string;
 }

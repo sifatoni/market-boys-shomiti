@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Edit, User, Phone, MapPin, Calendar, CreditCard, Clock, Activity, FileText } from 'lucide-react';
+import { ArrowLeft, Edit, User, Phone, MapPin, Calendar, CreditCard, Clock, Activity, FileText, Key, Trash2, X, Mail } from 'lucide-react';
 import api from '@/lib/api';
 import { Member, Deposit, DueRecord } from '@/types';
 
@@ -16,6 +16,18 @@ export default function MemberDetailsPage() {
   const [member, setMember] = useState<Member | null>(null);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [dues, setDues] = useState<DueRecord[]>([]);
+
+  // Modal States
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetPasswords, setResetPasswords] = useState({ newPassword: '', confirmPassword: '' });
+  const [resetError, setResetError] = useState('');
+  const [resetSuccess, setResetSuccess] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [removeConfirmName, setRemoveConfirmName] = useState('');
+  const [removeError, setRemoveError] = useState('');
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const fetchMemberDetails = useCallback(async () => {
     if (!id) return;
@@ -41,6 +53,50 @@ export default function MemberDetailsPage() {
       setLoading(false);
     }
   }, [id]);
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError('');
+    setResetSuccess('');
+    
+    if (resetPasswords.newPassword !== resetPasswords.confirmPassword) {
+      setResetError('Passwords do not match');
+      return;
+    }
+    if (resetPasswords.newPassword.length < 6) {
+      setResetError('Password must be at least 6 characters');
+      return;
+    }
+    
+    setIsResetting(true);
+    try {
+      await api.patch(`/users/${member!.userId}/reset-password`, { newPassword: resetPasswords.newPassword });
+      setResetSuccess('Password reset successfully');
+      setTimeout(() => {
+        setShowResetModal(false);
+        setResetPasswords({ newPassword: '', confirmPassword: '' });
+        setResetSuccess('');
+      }, 2000);
+    } catch (error: any) {
+      setResetError(error.response?.data?.message || 'Failed to reset password');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const handleRemoveMember = async () => {
+    if (removeConfirmName !== member!.fullName) return;
+    setRemoveError('');
+    setIsRemoving(true);
+    
+    try {
+      await api.delete(`/users/${member!.userId}`);
+      router.push('/admin/members');
+    } catch (error: any) {
+      setRemoveError(error.response?.data?.message || 'Failed to remove member');
+      setIsRemoving(false);
+    }
+  };
 
   useEffect(() => {
     fetchMemberDetails();
@@ -85,13 +141,31 @@ export default function MemberDetailsPage() {
           </Link>
           <h1 className="text-2xl font-bold text-white">Member Details</h1>
         </div>
-        <button
-          onClick={() => router.push(`/admin/members/${id}/edit`)}
-          className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-        >
-          <Edit className="w-4 h-4" />
-          Edit Member
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setShowResetModal(true)}
+            className="flex items-center gap-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm"
+          >
+            <Key className="w-4 h-4" />
+            <span className="hidden sm:inline">Reset Password</span>
+          </button>
+          
+          <button
+            onClick={() => setShowRemoveModal(true)}
+            className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-3 py-2 rounded-lg font-medium transition-colors text-sm"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Remove Member</span>
+          </button>
+          
+          <button
+            onClick={() => router.push(`/admin/members/${id}/edit`)}
+            className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+          >
+            <Edit className="w-4 h-4" />
+            <span className="hidden sm:inline">Edit Member</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -118,6 +192,10 @@ export default function MemberDetailsPage() {
 
             <div className="w-full pt-4 border-t border-zinc-800 space-y-3 text-left">
               <div className="flex items-center gap-3 text-sm text-zinc-400">
+                <Mail className="w-4 h-4 text-zinc-500 shrink-0" />
+                <span>{member.user?.email || '—'}</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-zinc-400">
                 <Phone className="w-4 h-4 text-zinc-500 shrink-0" />
                 <span>{member.phone || 'No phone provided'}</span>
               </div>
@@ -127,7 +205,7 @@ export default function MemberDetailsPage() {
               </div>
               <div className="flex items-center gap-3 text-sm text-zinc-400">
                 <Calendar className="w-4 h-4 text-zinc-500 shrink-0" />
-                <span>Joined {member.joinDate ? new Date(member.joinDate).toLocaleDateString() : 'N/A'}</span>
+                <span>Joined {new Date(member.joinedDate || member.createdAt).toLocaleDateString('en-BD')}</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-zinc-400">
                 <CreditCard className="w-4 h-4 text-zinc-500 shrink-0" />
@@ -243,6 +321,116 @@ export default function MemberDetailsPage() {
           
         </div>
       </div>
+
+      {/* Reset Password Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 w-full max-w-md relative">
+            <button 
+              onClick={() => setShowResetModal(false)}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold text-white mb-6">পাসওয়ার্ড রিসেট</h2>
+            
+            {resetSuccess ? (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-lg text-center font-medium">
+                {resetSuccess}
+              </div>
+            ) : (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                {resetError && (
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm text-center">
+                    {resetError}
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">New Password</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={resetPasswords.newPassword}
+                    onChange={(e) => setResetPasswords({...resetPasswords, newPassword: e.target.value})}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                    placeholder="Enter new password (min. 6 chars)"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Confirm Password</label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    value={resetPasswords.confirmPassword}
+                    onChange={(e) => setResetPasswords({...resetPasswords, confirmPassword: e.target.value})}
+                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-amber-500 transition-colors"
+                    placeholder="Confirm new password"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isResetting || !resetPasswords.newPassword || !resetPasswords.confirmPassword}
+                  className="w-full bg-amber-500 hover:bg-amber-600 text-amber-950 font-bold py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                >
+                  {isResetting ? 'Resetting...' : 'Reset Password'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Remove Member Modal */}
+      {showRemoveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 w-full max-w-md relative">
+            <button 
+              onClick={() => setShowRemoveModal(false)}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold text-red-500 mb-4">সদস্য সরিয়ে ফেলুন</h2>
+            
+            <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-lg mb-6">
+              <p className="text-red-400 text-sm font-medium">
+                এই সদস্যকে সরিয়ে ফেললে তার সকল ডেটা মুছে যাবে। এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
+              </p>
+            </div>
+
+            {removeError && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-sm text-center mb-4">
+                {removeError}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">
+                  Type <strong className="text-white">{member.fullName}</strong> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={removeConfirmName}
+                  onChange={(e) => setRemoveConfirmName(e.target.value)}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-red-500 transition-colors"
+                  placeholder="Enter member's full name"
+                />
+              </div>
+              <button
+                onClick={handleRemoveMember}
+                disabled={isRemoving || removeConfirmName !== member.fullName}
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isRemoving ? 'Removing...' : 'সরিয়ে ফেলুন'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

@@ -7,10 +7,10 @@ export declare class DuesController {
     constructor(duesService: DuesService, membersService: MembersService);
     create(dto: CreateDueDto): Promise<{
         id: string;
-        createdAt: Date;
         status: import("@prisma/client").$Enums.DueStatus;
-        amount: import("@prisma/client-runtime-utils").Decimal;
+        createdAt: Date;
         memberId: string;
+        amount: import("@prisma/client-runtime-utils").Decimal;
         dueDate: Date;
         paidDate: Date | null;
     }>;
@@ -23,19 +23,19 @@ export declare class DuesController {
     }>;
     findAll(memberId: string, req: any): Promise<{
         id: string;
-        createdAt: Date;
         status: import("@prisma/client").$Enums.DueStatus;
-        amount: import("@prisma/client-runtime-utils").Decimal;
+        createdAt: Date;
         memberId: string;
+        amount: import("@prisma/client-runtime-utils").Decimal;
         dueDate: Date;
         paidDate: Date | null;
     }[]>;
     findOverdue(): Promise<{
         id: string;
-        createdAt: Date;
         status: import("@prisma/client").$Enums.DueStatus;
-        amount: import("@prisma/client-runtime-utils").Decimal;
+        createdAt: Date;
         memberId: string;
+        amount: import("@prisma/client-runtime-utils").Decimal;
         dueDate: Date;
         paidDate: Date | null;
     }[]>;
@@ -47,10 +47,10 @@ export declare class DuesController {
     }>;
     updateStatus(id: string, dto: UpdateDueStatusDto): Promise<{
         id: string;
-        createdAt: Date;
         status: import("@prisma/client").$Enums.DueStatus;
-        amount: import("@prisma/client-runtime-utils").Decimal;
+        createdAt: Date;
         memberId: string;
+        amount: import("@prisma/client-runtime-utils").Decimal;
         dueDate: Date;
         paidDate: Date | null;
     }>;

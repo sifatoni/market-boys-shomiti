@@ -19,6 +19,7 @@ class CreateMemberDto {
     address;
     userId;
     monthlyAmount;
+    plainPassword;
 }
 exports.CreateMemberDto = CreateMemberDto;
 __decorate([
@@ -57,4 +58,10 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], CreateMemberDto.prototype, "monthlyAmount", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'MyP@ssword', required: false, description: 'Plain password for welcome email only — never stored' }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateMemberDto.prototype, "plainPassword", void 0);
 //# sourceMappingURL=create-member.dto.js.map

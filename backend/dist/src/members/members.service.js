@@ -8,18 +8,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var MembersService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MembersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
 const client_1 = require("@prisma/client");
-let MembersService = class MembersService {
+const email_service_1 = require("../email/email.service");
+let MembersService = MembersService_1 = class MembersService {
     prisma;
-    constructor(prisma) {
+    emailService;
+    logger = new common_1.Logger(MembersService_1.name);
+    constructor(prisma, emailService) {
         this.prisma = prisma;
+        this.emailService = emailService;
     }
     async create(dto) {
-        const { userId, monthlyAmount, ...memberData } = dto;
+        const { userId, monthlyAmount, plainPassword, ...memberData } = dto;
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
             include: { member: true }
@@ -30,13 +35,23 @@ let MembersService = class MembersService {
         if (user.member) {
             throw new common_1.ConflictException('This user already has a member profile');
         }
-        return this.prisma.member.create({
+        const createdMember = await this.prisma.member.create({
             data: {
                 ...memberData,
                 monthlyAmount: new client_1.Prisma.Decimal(monthlyAmount || '0'),
                 user: { connect: { id: userId } },
             },
         });
+        this.logger.log(`Attempting welcome email to: ${user.email}`);
+        this.emailService.sendWelcomeEmail({
+            to: user.email,
+            memberName: dto.fullName,
+            memberNumber: createdMember.memberNumber,
+            email: user.email,
+            password: plainPassword || 'আপনার নির্ধারিত পাসওয়ার্ড',
+            loginUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+        }).catch(() => { });
+        return createdMember;
     }
     async findAll() {
         return this.prisma.member.findMany({
@@ -106,8 +121,9 @@ let MembersService = class MembersService {
     }
 };
 exports.MembersService = MembersService;
-exports.MembersService = MembersService = __decorate([
+exports.MembersService = MembersService = MembersService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        email_service_1.EmailService])
 ], MembersService);
 //# sourceMappingURL=members.service.js.map

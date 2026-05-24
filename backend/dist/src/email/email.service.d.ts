@@ -19,4 +19,12 @@ export declare class EmailService {
         date: string;
         description?: string;
     }): Promise<void>;
+    sendWelcomeEmail(params: {
+        to: string;
+        memberName: string;
+        memberNumber: string;
+        email: string;
+        password: string;
+        loginUrl: string;
+    }): Promise<void>;
 }

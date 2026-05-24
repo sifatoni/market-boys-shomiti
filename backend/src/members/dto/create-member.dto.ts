@@ -31,4 +31,9 @@ export class CreateMemberDto {
   @IsString()
   @IsOptional()
   monthlyAmount?: string;
+
+  @ApiProperty({ example: 'MyP@ssword', required: false, description: 'Plain password for welcome email only — never stored' })
+  @IsString()
+  @IsOptional()
+  plainPassword?: string;
 }

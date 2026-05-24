@@ -9,4 +9,6 @@ export declare class UsersService {
     create(data: Prisma.UserCreateInput): Promise<User>;
     update(id: string, data: any): Promise<User>;
     delete(id: string): Promise<User>;
+    resetPassword(userId: string, newPassword: string): Promise<void>;
+    removeUser(userId: string): Promise<void>;
 }

@@ -9,17 +9,17 @@ export declare class WithdrawalsController {
     create(dto: CreateWithdrawalDto): Promise<{
         id: string;
         createdAt: Date;
-        description: string | null;
-        amount: import("@prisma/client-runtime-utils").Decimal;
         memberId: string;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        description: string | null;
         date: Date;
     }>;
     findAll(memberId: string, req: any): Promise<{
         id: string;
         createdAt: Date;
-        description: string | null;
-        amount: import("@prisma/client-runtime-utils").Decimal;
         memberId: string;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        description: string | null;
         date: Date;
     }[]>;
     getSummary(): Promise<{
@@ -29,25 +29,25 @@ export declare class WithdrawalsController {
     findOne(id: string): Promise<{
         id: string;
         createdAt: Date;
-        description: string | null;
-        amount: import("@prisma/client-runtime-utils").Decimal;
         memberId: string;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        description: string | null;
         date: Date;
     }>;
     update(id: string, dto: UpdateWithdrawalDto): Promise<{
         id: string;
         createdAt: Date;
-        description: string | null;
-        amount: import("@prisma/client-runtime-utils").Decimal;
         memberId: string;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        description: string | null;
         date: Date;
     }>;
     remove(id: string): Promise<{
         id: string;
         createdAt: Date;
-        description: string | null;
-        amount: import("@prisma/client-runtime-utils").Decimal;
         memberId: string;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        description: string | null;
         date: Date;
     }>;
 }
