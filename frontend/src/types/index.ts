@@ -13,6 +13,7 @@ export interface Member {
   fullName: string;
   phone?: string;
   address?: string;
+  monthlyAmount?: string;
   joinedDate: string;
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   userId: string;

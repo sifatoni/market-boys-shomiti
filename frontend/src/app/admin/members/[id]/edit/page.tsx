@@ -10,6 +10,7 @@ interface MemberFields {
   fullName: string;
   memberNumber: string;
   phone: string;
+  monthlyAmount: string;
   address: string;
 }
 
@@ -43,6 +44,7 @@ export default function EditMemberPage() {
     fullName: '',
     memberNumber: '',
     phone: '',
+    monthlyAmount: '',
     address: '',
   });
 
@@ -50,6 +52,7 @@ export default function EditMemberPage() {
     fullName: '',
     memberNumber: '',
     phone: '',
+    monthlyAmount: '',
     address: '',
   });
 
@@ -61,6 +64,7 @@ export default function EditMemberPage() {
         fullName: m.fullName ?? '',
         memberNumber: m.memberNumber ?? '',
         phone: m.phone ?? '',
+        monthlyAmount: m.monthlyAmount ?? '',
         address: m.address ?? '',
       };
       setForm(fields);
@@ -189,6 +193,21 @@ export default function EditMemberPage() {
                 onChange={handleChange}
                 className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-shadow placeholder:text-zinc-600"
                 placeholder="+880 1XXX-XXXXXX"
+              />
+            </div>
+
+            {/* Monthly Contribution */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-300">Monthly Contribution (৳)</label>
+              <input
+                type="number"
+                name="monthlyAmount"
+                min={0}
+                step={0.01}
+                value={form.monthlyAmount}
+                onChange={handleChange}
+                className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-shadow placeholder:text-zinc-600"
+                placeholder="e.g. 1000"
               />
             </div>
 

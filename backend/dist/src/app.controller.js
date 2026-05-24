@@ -16,13 +16,28 @@ const jwt_auth_guard_1 = require("./auth/jwt-auth.guard");
 const roles_guard_1 = require("./auth/roles.guard");
 const roles_decorator_1 = require("./auth/roles.decorator");
 const prisma_service_1 = require("./prisma.service");
+const email_service_1 = require("./email/email.service");
 let AppController = class AppController {
     prisma;
-    constructor(prisma) {
+    emailService;
+    constructor(prisma, emailService) {
         this.prisma = prisma;
+        this.emailService = emailService;
     }
     getHello() {
         return 'Market Boys Shomiti API is running!';
+    }
+    async testEmail() {
+        await this.emailService.sendMonthlyDueNotification({
+            to: 'onisifat@gmail.com',
+            memberName: 'Md. Sifat Alam Siddiqi',
+            memberNumber: 'MBR-9696',
+            dueAmount: 1000,
+            dueDate: new Date().toISOString(),
+            month: 'May',
+            year: 2026,
+        });
+        return { message: 'Test email sent! Check your inbox.' };
     }
     async getDashboardSummary() {
         const [totalMembers, activeMembers, depositAgg, withdrawalAgg, paidDues, unpaidDues, overdueCount,] = await Promise.all([
@@ -63,6 +78,14 @@ __decorate([
     __metadata("design:returntype", String)
 ], AppController.prototype, "getHello", null);
 __decorate([
+    (0, common_1.Get)('test-email'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiOperation)({ summary: 'Send a test email' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AppController.prototype, "testEmail", null);
+__decorate([
     (0, common_1.Get)('dashboard/summary'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('ADMIN'),
@@ -75,6 +98,7 @@ exports.AppController = AppController = __decorate([
     (0, swagger_1.ApiTags)('Dashboard'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Controller)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        email_service_1.EmailService])
 ], AppController);
 //# sourceMappingURL=app.controller.js.map

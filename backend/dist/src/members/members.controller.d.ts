@@ -16,6 +16,7 @@ export declare class MembersController {
         address: string | null;
         joinedDate: Date;
         status: import("@prisma/client").$Enums.MemberStatus;
+        monthlyAmount: import("@prisma/client-runtime-utils").Decimal;
         userId: string;
     }[]>;
     findOne(id: string, req: any): Promise<{
@@ -28,6 +29,7 @@ export declare class MembersController {
         address: string | null;
         joinedDate: Date;
         status: import("@prisma/client").$Enums.MemberStatus;
+        monthlyAmount: import("@prisma/client-runtime-utils").Decimal;
         userId: string;
     }>;
     update(id: string, updateMemberDto: UpdateMemberDto): Promise<Member>;

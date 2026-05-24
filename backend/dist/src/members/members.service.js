@@ -12,13 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MembersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
+const client_1 = require("@prisma/client");
 let MembersService = class MembersService {
     prisma;
     constructor(prisma) {
         this.prisma = prisma;
     }
     async create(dto) {
-        const { userId, ...memberData } = dto;
+        const { userId, monthlyAmount, ...memberData } = dto;
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
             include: { member: true }
@@ -32,12 +33,14 @@ let MembersService = class MembersService {
         return this.prisma.member.create({
             data: {
                 ...memberData,
+                monthlyAmount: new client_1.Prisma.Decimal(monthlyAmount || '0'),
                 user: { connect: { id: userId } },
             },
         });
     }
     async findAll() {
         return this.prisma.member.findMany({
+            where: { user: { role: { not: client_1.UserRole.ADMIN } } },
             include: { user: true },
         });
     }
@@ -52,13 +55,19 @@ let MembersService = class MembersService {
         return member;
     }
     async update(id, dto) {
+        const { monthlyAmount, ...rest } = dto;
         try {
             return await this.prisma.member.update({
                 where: { id },
-                data: dto,
+                data: {
+                    ...rest,
+                    ...(monthlyAmount !== undefined && {
+                        monthlyAmount: new client_1.Prisma.Decimal(monthlyAmount),
+                    }),
+                },
             });
         }
-        catch (error) {
+        catch {
             throw new common_1.NotFoundException(`Member with ID ${id} not found`);
         }
     }
@@ -68,7 +77,7 @@ let MembersService = class MembersService {
                 where: { id },
             });
         }
-        catch (error) {
+        catch {
             throw new common_1.NotFoundException(`Member with ID ${id} not found`);
         }
     }

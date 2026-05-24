@@ -4,4 +4,5 @@ export declare class CreateMemberDto {
     phone?: string;
     address?: string;
     userId: string;
+    monthlyAmount?: string;
 }

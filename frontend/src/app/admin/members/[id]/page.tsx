@@ -129,6 +129,17 @@ export default function MemberDetailsPage() {
                 <Calendar className="w-4 h-4 text-zinc-500 shrink-0" />
                 <span>Joined {member.joinDate ? new Date(member.joinDate).toLocaleDateString() : 'N/A'}</span>
               </div>
+              <div className="flex items-center gap-3 text-sm text-zinc-400">
+                <CreditCard className="w-4 h-4 text-zinc-500 shrink-0" />
+                <span>
+                  Monthly:{' '}
+                  <span className="text-emerald-400 font-medium">
+                    {member.monthlyAmount && Number(member.monthlyAmount) > 0
+                      ? `৳ ${Number(member.monthlyAmount).toLocaleString('en-IN')}`
+                      : '—'}
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
 

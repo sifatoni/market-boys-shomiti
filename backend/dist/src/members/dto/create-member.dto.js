@@ -18,6 +18,7 @@ class CreateMemberDto {
     phone;
     address;
     userId;
+    monthlyAmount;
 }
 exports.CreateMemberDto = CreateMemberDto;
 __decorate([
@@ -50,4 +51,10 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateMemberDto.prototype, "userId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '1000.00', required: false }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], CreateMemberDto.prototype, "monthlyAmount", void 0);
 //# sourceMappingURL=create-member.dto.js.map

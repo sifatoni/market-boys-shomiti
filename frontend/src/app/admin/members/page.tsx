@@ -89,6 +89,7 @@ export default function MembersPage() {
                 <th className="py-3 px-6 text-xs font-semibold uppercase tracking-wider rounded-tl-xl text-left">Member No.</th>
                 <th className="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-left">Full Name</th>
                 <th className="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-left">Phone</th>
+                <th className="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-left">Monthly (৳)</th>
                 <th className="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-left">Join Date</th>
                 <th className="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-left">Status</th>
                 <th className="py-3 px-6 text-xs font-semibold uppercase tracking-wider text-left">Balance</th>
@@ -102,6 +103,7 @@ export default function MembersPage() {
                     <td className="px-6 py-4"><div className="h-4 bg-zinc-800 rounded w-16"></div></td>
                     <td className="px-6 py-4"><div className="h-4 bg-zinc-800 rounded w-32"></div></td>
                     <td className="px-6 py-4"><div className="h-4 bg-zinc-800 rounded w-24"></div></td>
+                    <td className="px-6 py-4"><div className="h-4 bg-zinc-800 rounded w-16"></div></td>
                     <td className="px-6 py-4"><div className="h-4 bg-zinc-800 rounded w-24"></div></td>
                     <td className="px-6 py-4"><div className="h-6 bg-zinc-800 rounded-full w-16"></div></td>
                     <td className="px-6 py-4"><div className="h-4 bg-zinc-800 rounded w-16"></div></td>
@@ -113,7 +115,7 @@ export default function MembersPage() {
                 ))
               ) : members.length === 0 ? (
                 <tr className="border-b border-zinc-800">
-                  <td colSpan={7} className="px-6 py-12 text-center text-zinc-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-zinc-500">
                     No members found
                   </td>
                 </tr>
@@ -123,6 +125,11 @@ export default function MembersPage() {
                     <td className="px-6 py-4 font-medium text-white">{member.memberNumber}</td>
                     <td className="px-6 py-4 font-medium text-white">{member.fullName}</td>
                     <td className="px-6 py-4">{member.phone || '—'}</td>
+                    <td className="px-6 py-4 text-emerald-400 font-medium">
+                      {member.monthlyAmount && Number(member.monthlyAmount) > 0
+                        ? `৳ ${Number(member.monthlyAmount).toLocaleString('en-IN')}`
+                        : '—'}
+                    </td>
                     <td className="px-6 py-4">
                       {member.joinDate ? new Date(member.joinDate).toLocaleDateString() : '—'}
                     </td>

@@ -55,6 +55,9 @@ let AuthService = class AuthService {
         this.jwtService = jwtService;
     }
     async login(email, pass) {
+        if (!pass) {
+            throw new common_1.UnauthorizedException('Invalid credentials');
+        }
         const user = await this.usersService.findOneByEmail(email);
         if (!user) {
             throw new common_1.UnauthorizedException('Invalid credentials');

@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { Member, Prisma } from '@prisma/client';
+import { Member, Prisma, UserRole } from '@prisma/client';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 
@@ -9,7 +9,7 @@ export class MembersService {
   constructor(private prisma: PrismaService) { }
 
   async create(dto: CreateMemberDto): Promise<Member> {
-    const { userId, ...memberData } = dto;
+    const { userId, monthlyAmount, ...memberData } = dto;
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -27,6 +27,7 @@ export class MembersService {
     return this.prisma.member.create({
       data: {
         ...memberData,
+        monthlyAmount: new Prisma.Decimal(monthlyAmount || '0'),
         user: { connect: { id: userId } },
       },
     });
@@ -34,6 +35,7 @@ export class MembersService {
 
   async findAll(): Promise<Member[]> {
     return this.prisma.member.findMany({
+      where: { user: { role: { not: UserRole.ADMIN } } },
       include: { user: true },
     });
   }
@@ -50,12 +52,18 @@ export class MembersService {
   }
 
   async update(id: string, dto: UpdateMemberDto): Promise<Member> {
+    const { monthlyAmount, ...rest } = dto;
     try {
       return await this.prisma.member.update({
         where: { id },
-        data: dto,
+        data: {
+          ...rest,
+          ...(monthlyAmount !== undefined && {
+            monthlyAmount: new Prisma.Decimal(monthlyAmount),
+          }),
+        },
       });
-    } catch (error) {
+    } catch {
       throw new NotFoundException(`Member with ID ${id} not found`);
     }
   }
@@ -65,7 +73,7 @@ export class MembersService {
       return await this.prisma.member.delete({
         where: { id },
       });
-    } catch (error) {
+    } catch {
       throw new NotFoundException(`Member with ID ${id} not found`);
     }
   }

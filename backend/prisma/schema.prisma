@@ -38,6 +38,7 @@ model Member {
   address       String?
   joinedDate    DateTime     @default(now())
   status        MemberStatus @default(ACTIVE)
+  monthlyAmount Decimal      @default(0)
 
   userId        String       @unique
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)

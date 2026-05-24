@@ -12,12 +12,13 @@ const deposits_service_1 = require("./deposits.service");
 const deposits_controller_1 = require("./deposits.controller");
 const prisma_module_1 = require("../prisma.module");
 const members_module_1 = require("../members/members.module");
+const email_module_1 = require("../email/email.module");
 let DepositsModule = class DepositsModule {
 };
 exports.DepositsModule = DepositsModule;
 exports.DepositsModule = DepositsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, members_module_1.MembersModule],
+        imports: [prisma_module_1.PrismaModule, members_module_1.MembersModule, email_module_1.EmailModule],
         controllers: [deposits_controller_1.DepositsController],
         providers: [deposits_service_1.DepositsService],
         exports: [deposits_service_1.DepositsService],

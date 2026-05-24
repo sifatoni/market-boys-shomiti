@@ -12,18 +12,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DepositsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
+const email_service_1 = require("../email/email.service");
 const client_1 = require("@prisma/client");
 let DepositsService = class DepositsService {
     prisma;
-    constructor(prisma) {
+    emailService;
+    constructor(prisma, emailService) {
         this.prisma = prisma;
+        this.emailService = emailService;
     }
     async create(dto) {
         const member = await this.prisma.member.findUnique({ where: { id: dto.memberId } });
         if (!member) {
             throw new common_1.NotFoundException(`Member with ID ${dto.memberId} not found`);
         }
-        return this.prisma.deposit.create({
+        const newDeposit = await this.prisma.deposit.create({
             data: {
                 amount: new client_1.Prisma.Decimal(dto.amount),
                 date: dto.date ? new Date(dto.date) : new Date(),
@@ -32,6 +35,21 @@ let DepositsService = class DepositsService {
             },
             include: { member: true },
         });
+        const depositWithMember = await this.prisma.deposit.findUnique({
+            where: { id: newDeposit.id },
+            include: { member: { include: { user: true } } },
+        });
+        if (depositWithMember?.member?.user?.email) {
+            this.emailService.sendDepositConfirmation({
+                to: depositWithMember.member.user.email,
+                memberName: depositWithMember.member.fullName,
+                memberNumber: depositWithMember.member.memberNumber,
+                amount: Number(newDeposit.amount),
+                date: newDeposit.date.toISOString(),
+                description: newDeposit.description ?? undefined,
+            });
+        }
+        return newDeposit;
     }
     async findAll(memberId) {
         return this.prisma.deposit.findMany({
@@ -85,6 +103,7 @@ let DepositsService = class DepositsService {
 exports.DepositsService = DepositsService;
 exports.DepositsService = DepositsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        email_service_1.EmailService])
 ], DepositsService);
 //# sourceMappingURL=deposits.service.js.map

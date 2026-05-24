@@ -26,4 +26,9 @@ export class CreateMemberDto {
   @IsUUID()
   @IsNotEmpty()
   userId: string;
+
+  @ApiProperty({ example: '1000.00', required: false })
+  @IsString()
+  @IsOptional()
+  monthlyAmount?: string;
 }

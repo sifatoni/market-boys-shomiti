@@ -1,8 +1,13 @@
 import { PrismaService } from './prisma.service';
+import { EmailService } from './email/email.service';
 export declare class AppController {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly emailService;
+    constructor(prisma: PrismaService, emailService: EmailService);
     getHello(): string;
+    testEmail(): Promise<{
+        message: string;
+    }>;
     getDashboardSummary(): Promise<{
         members: {
             total: number;

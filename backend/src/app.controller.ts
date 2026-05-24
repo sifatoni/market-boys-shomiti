@@ -4,16 +4,36 @@ import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
 import { Roles } from './auth/roles.decorator';
 import { PrismaService } from './prisma.service';
+import { EmailService } from './email/email.service';
 
 @ApiTags('Dashboard')
 @ApiBearerAuth()
 @Controller()
 export class AppController {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) { }
 
   @Get()
   getHello(): string {
     return 'Market Boys Shomiti API is running!';
+  }
+
+  @Get('test-email')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Send a test email' })
+  async testEmail() {
+    await this.emailService.sendMonthlyDueNotification({
+      to: 'onisifat@gmail.com',
+      memberName: 'Md. Sifat Alam Siddiqi',
+      memberNumber: 'MBR-9696',
+      dueAmount: 1000,
+      dueDate: new Date().toISOString(),
+      month: 'May',
+      year: 2026,
+    });
+    return { message: 'Test email sent! Check your inbox.' };
   }
 
   @Get('dashboard/summary')
