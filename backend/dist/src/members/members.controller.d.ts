@@ -8,6 +8,8 @@ export declare class MembersController {
     create(createMemberDto: CreateMemberDto): Promise<Member>;
     findAll(req: any): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         memberNumber: string;
         fullName: string;
         phone: string | null;
@@ -15,11 +17,11 @@ export declare class MembersController {
         joinedDate: Date;
         status: import("@prisma/client").$Enums.MemberStatus;
         userId: string;
-        createdAt: Date;
-        updatedAt: Date;
     }[]>;
     findOne(id: string, req: any): Promise<{
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         memberNumber: string;
         fullName: string;
         phone: string | null;
@@ -27,8 +29,6 @@ export declare class MembersController {
         joinedDate: Date;
         status: import("@prisma/client").$Enums.MemberStatus;
         userId: string;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     update(id: string, updateMemberDto: UpdateMemberDto): Promise<Member>;
     remove(id: string): Promise<Member>;

@@ -7,12 +7,12 @@ export declare class DuesController {
     constructor(duesService: DuesService, membersService: MembersService);
     create(dto: CreateDueDto): Promise<{
         id: string;
+        createdAt: Date;
+        status: import("@prisma/client").$Enums.DueStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
+        memberId: string;
         dueDate: Date;
         paidDate: Date | null;
-        status: import("@prisma/client").$Enums.DueStatus;
-        memberId: string;
-        createdAt: Date;
     }>;
     generateMonthly(body: {
         amount: string;
@@ -23,21 +23,21 @@ export declare class DuesController {
     }>;
     findAll(memberId: string, req: any): Promise<{
         id: string;
+        createdAt: Date;
+        status: import("@prisma/client").$Enums.DueStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
+        memberId: string;
         dueDate: Date;
         paidDate: Date | null;
-        status: import("@prisma/client").$Enums.DueStatus;
-        memberId: string;
-        createdAt: Date;
     }[]>;
     findOverdue(): Promise<{
         id: string;
+        createdAt: Date;
+        status: import("@prisma/client").$Enums.DueStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
+        memberId: string;
         dueDate: Date;
         paidDate: Date | null;
-        status: import("@prisma/client").$Enums.DueStatus;
-        memberId: string;
-        createdAt: Date;
     }[]>;
     getSummary(): Promise<{
         totalDue: number;
@@ -47,11 +47,11 @@ export declare class DuesController {
     }>;
     updateStatus(id: string, dto: UpdateDueStatusDto): Promise<{
         id: string;
+        createdAt: Date;
+        status: import("@prisma/client").$Enums.DueStatus;
         amount: import("@prisma/client-runtime-utils").Decimal;
+        memberId: string;
         dueDate: Date;
         paidDate: Date | null;
-        status: import("@prisma/client").$Enums.DueStatus;
-        memberId: string;
-        createdAt: Date;
     }>;
 }

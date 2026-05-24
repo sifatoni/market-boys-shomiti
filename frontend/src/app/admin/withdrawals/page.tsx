@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, Plus, Search, ChevronLeft, ChevronRight, Activity } from 'lucide-react';
+import { Eye, Plus, Search, ChevronLeft, ChevronRight, Activity, Pencil, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 import { Withdrawal } from '@/types';
 
@@ -50,6 +50,16 @@ export default function WithdrawalsPage() {
     setSearch(e.target.value);
     setPage(1);
   };
+
+  async function handleDelete(id: string) {
+    if (!window.confirm('Are you sure you want to delete this withdrawal?')) return;
+    try {
+      await api.delete(`/withdrawals/${id}`);
+      fetchWithdrawals(search, page);
+    } catch (err: any) {
+      alert(err.response?.data?.message ?? 'Failed to delete withdrawal.');
+    }
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -141,13 +151,27 @@ export default function WithdrawalsPage() {
                         : '—'}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => router.push(`/admin/withdrawals/${withdrawal.id}`)}
-                          className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors"
-                          title="View Details"
+                          className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded transition-colors"
+                          title="View"
                         >
                           <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => router.push(`/admin/withdrawals/${withdrawal.id}/edit`)}
+                          className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-zinc-700 rounded transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(withdrawal.id)}
+                          className="p-1.5 text-red-400 hover:text-red-300 hover:bg-zinc-700 rounded transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

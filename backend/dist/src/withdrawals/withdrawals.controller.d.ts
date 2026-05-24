@@ -8,19 +8,19 @@ export declare class WithdrawalsController {
     constructor(withdrawalsService: WithdrawalsService, membersService: MembersService);
     create(dto: CreateWithdrawalDto): Promise<{
         id: string;
-        amount: import("@prisma/client-runtime-utils").Decimal;
-        date: Date;
-        description: string | null;
-        memberId: string;
         createdAt: Date;
+        description: string | null;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        memberId: string;
+        date: Date;
     }>;
     findAll(memberId: string, req: any): Promise<{
         id: string;
-        amount: import("@prisma/client-runtime-utils").Decimal;
-        date: Date;
-        description: string | null;
-        memberId: string;
         createdAt: Date;
+        description: string | null;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        memberId: string;
+        date: Date;
     }[]>;
     getSummary(): Promise<{
         total: number;
@@ -28,26 +28,26 @@ export declare class WithdrawalsController {
     }>;
     findOne(id: string): Promise<{
         id: string;
-        amount: import("@prisma/client-runtime-utils").Decimal;
-        date: Date;
-        description: string | null;
-        memberId: string;
         createdAt: Date;
+        description: string | null;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        memberId: string;
+        date: Date;
     }>;
     update(id: string, dto: UpdateWithdrawalDto): Promise<{
         id: string;
-        amount: import("@prisma/client-runtime-utils").Decimal;
-        date: Date;
-        description: string | null;
-        memberId: string;
         createdAt: Date;
+        description: string | null;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        memberId: string;
+        date: Date;
     }>;
     remove(id: string): Promise<{
         id: string;
-        amount: import("@prisma/client-runtime-utils").Decimal;
-        date: Date;
-        description: string | null;
-        memberId: string;
         createdAt: Date;
+        description: string | null;
+        amount: import("@prisma/client-runtime-utils").Decimal;
+        memberId: string;
+        date: Date;
     }>;
 }

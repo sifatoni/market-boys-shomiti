@@ -1,82 +1,82 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Search } from 'lucide-react';
+import { ArrowLeft, Loader2, X, ChevronDown, Check } from 'lucide-react';
 import api from '@/lib/api';
 
 interface MemberOption {
   id: string;
   fullName: string;
   memberNumber: string;
+  status?: string;
 }
 
 export default function NewDepositPage() {
   const router = useRouter();
 
-  // Member search state
-  const [memberQuery, setMemberQuery] = useState('');
-  const [memberOptions, setMemberOptions] = useState<MemberOption[]>([]);
-  const [memberSearching, setMemberSearching] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  // ── Member select state ──────────────────────────────────────────────────
+  const [allMembers, setAllMembers] = useState<MemberOption[]>([]);
+  const [filterText, setFilterText] = useState('');
+  const [showDropdown, setShowDropdown] = useState(false);
   const [selectedMember, setSelectedMember] = useState<MemberOption | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Form fields
+  // ── Form fields ──────────────────────────────────────────────────────────
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState('');
 
-  // Submission state
+  // ── Submission state ─────────────────────────────────────────────────────
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
-  // Member search with 400ms debounce
-  const searchMembers = useCallback(async (q: string) => {
-    if (!q.trim()) { setMemberOptions([]); return; }
-    setMemberSearching(true);
-    try {
-      const res = await api.get('/members', { params: { search: q } });
-      const raw = res.data?.data ?? res.data;
-      setMemberOptions(Array.isArray(raw) ? raw.slice(0, 8) : []);
-    } catch {
-      setMemberOptions([]);
-    } finally {
-      setMemberSearching(false);
-    }
+  // Fetch all members once on mount
+  useEffect(() => {
+    api.get('/members', { params: { limit: 100 } })
+      .then(res => {
+        const raw = res.data?.data ?? res.data;
+        setAllMembers(Array.isArray(raw) ? raw : []);
+      })
+      .catch(() => setAllMembers([]));
   }, []);
 
-  useEffect(() => {
-    const t = setTimeout(() => searchMembers(memberQuery), 400);
-    return () => clearTimeout(t);
-  }, [memberQuery, searchMembers]);
-
-  // Close dropdown when clicking outside
+  // Close dropdown on outside click
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
+        setShowDropdown(false);
       }
     }
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
+  // Client-side filtered list
+  const filtered = allMembers.filter(m =>
+    m.fullName.toLowerCase().includes(filterText.toLowerCase()) ||
+    m.memberNumber.toLowerCase().includes(filterText.toLowerCase())
+  );
+
   function selectMember(m: MemberOption) {
     setSelectedMember(m);
-    setMemberQuery(`${m.memberNumber} — ${m.fullName}`);
-    setDropdownOpen(false);
-    setMemberOptions([]);
+    setFilterText('');
+    setShowDropdown(false);
+  }
+
+  function clearMember() {
+    setSelectedMember(null);
+    setFilterText('');
+    setShowDropdown(true);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedMember) { setError('Please select a member.'); return; }
+    if (!selectedMember) { setError('Please select a member'); return; }
     setError('');
     setLoading(true);
-
     try {
       await api.post('/deposits', {
         memberId: selectedMember.id,
@@ -85,17 +85,19 @@ export default function NewDepositPage() {
         description: description.trim() || undefined,
       });
       setSuccess(true);
-      setTimeout(() => router.push('/admin/deposits'), 2000);
+      setTimeout(() => router.push('/admin/deposits'), 1500);
     } catch (err: any) {
+      const msg = err.response?.data?.message;
       setError(
-        err.response?.data?.message ??
-        err.message ??
-        'Failed to record deposit. Please try again.'
+        Array.isArray(msg) ? msg.join(' · ') : msg ?? err.message ?? 'Failed to record deposit.'
       );
     } finally {
       setLoading(false);
     }
   }
+
+  const isActive = (m: MemberOption) =>
+    !m.status || m.status.toUpperCase() === 'ACTIVE';
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -130,56 +132,85 @@ export default function NewDepositPage() {
             </div>
           )}
 
-          {/* Member search */}
+          {/* ── Member Select ── */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-300">
               Member <span className="text-red-500">*</span>
             </label>
-            <div className="relative" ref={dropdownRef}>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  type="text"
-                  value={memberQuery}
-                  onChange={(e) => {
-                    setMemberQuery(e.target.value);
-                    setSelectedMember(null);
-                    setDropdownOpen(true);
-                  }}
-                  onFocus={() => memberQuery && setDropdownOpen(true)}
-                  placeholder="Type to search members…"
-                  className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent placeholder:text-zinc-600 transition-shadow"
-                />
-                {memberSearching && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 animate-spin" />
-                )}
-              </div>
 
-              {/* Dropdown */}
-              {dropdownOpen && memberOptions.length > 0 && (
-                <div className="absolute z-20 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-xl overflow-hidden">
-                  {memberOptions.map((m) => (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onMouseDown={() => selectMember(m)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-zinc-700 transition-colors"
-                    >
-                      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-emerald-600/20 text-emerald-400 text-xs font-bold shrink-0">
-                        {m.fullName.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm text-white font-medium">{m.fullName}</p>
-                        <p className="text-xs text-zinc-400 font-mono">{m.memberNumber}</p>
-                      </div>
-                    </button>
-                  ))}
+            <div className="relative" ref={dropdownRef}>
+              {selectedMember ? (
+                /* Selected state — click to reopen */
+                <div
+                  onClick={() => setShowDropdown(true)}
+                  className="flex items-center gap-3 bg-zinc-800 border border-emerald-600 rounded-lg px-4 py-2.5 cursor-pointer hover:border-emerald-500 transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    {selectedMember.fullName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-white font-medium leading-tight">{selectedMember.fullName}</p>
+                    <p className="text-xs text-zinc-400 font-mono">{selectedMember.memberNumber}</p>
+                  </div>
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); clearMember(); }}
+                    className="text-zinc-500 hover:text-white transition-colors ml-1"
+                    aria-label="Clear selection"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                /* Input trigger */
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={filterText}
+                    onClick={() => setShowDropdown(true)}
+                    onChange={(e) => { setFilterText(e.target.value); setShowDropdown(true); }}
+                    placeholder="Select a member..."
+                    autoComplete="off"
+                    className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-lg px-4 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent placeholder:text-zinc-500 transition-shadow cursor-pointer"
+                  />
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
                 </div>
               )}
 
-              {dropdownOpen && memberQuery && !memberSearching && memberOptions.length === 0 && (
-                <div className="absolute z-20 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-zinc-500 shadow-xl">
-                  No members found for "{memberQuery}"
+              {/* Dropdown */}
+              {showDropdown && (
+                <div className="absolute z-50 w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl max-h-56 overflow-y-auto">
+                  {filtered.length > 0 ? (
+                    filtered.map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onMouseDown={() => selectMember(m)}
+                        className="w-full px-4 py-3 hover:bg-zinc-700 cursor-pointer flex items-center gap-3 transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                          {m.fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="text-sm text-white font-medium leading-tight">{m.fullName}</p>
+                          <p className="text-xs text-zinc-400 font-mono">{m.memberNumber}</p>
+                        </div>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          isActive(m) ? 'bg-emerald-500/15 text-emerald-400' : 'bg-zinc-600/40 text-zinc-400'
+                        }`}>
+                          {m.status?.toUpperCase() ?? 'ACTIVE'}
+                        </span>
+                        {selectedMember?.id === m.id && (
+                          <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                        )}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="px-4 py-4 text-sm text-zinc-500 text-center">
+                      No members found
+                    </div>
+                  )}
                 </div>
               )}
             </div>

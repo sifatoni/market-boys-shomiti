@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Plus, Search, ChevronLeft, ChevronRight, Eye, Pencil, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 
 interface DepositRow {
@@ -75,6 +75,16 @@ export default function DepositsPage() {
   function handleSearch(e: React.ChangeEvent<HTMLInputElement>) {
     setSearch(e.target.value);
     setPage(1);
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm('Are you sure you want to delete this deposit?')) return;
+    try {
+      await api.delete(`/deposits/${id}`);
+      fetchDeposits(search, page);
+    } catch (err: any) {
+      alert(err.response?.data?.message ?? 'Failed to delete deposit.');
+    }
   }
 
   return (
@@ -164,13 +174,29 @@ export default function DepositsPage() {
                       {dep.description || '—'}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); router.push(`/admin/deposits/${dep.id}`); }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        View
-                      </button>
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); router.push(`/admin/deposits/${dep.id}`); }}
+                          className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded transition-colors"
+                          title="View"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); router.push(`/admin/deposits/${dep.id}/edit`); }}
+                          className="p-1.5 text-blue-400 hover:text-blue-300 hover:bg-zinc-700 rounded transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(dep.id); }}
+                          className="p-1.5 text-red-400 hover:text-red-300 hover:bg-zinc-700 rounded transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
